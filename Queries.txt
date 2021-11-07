@@ -1,0 +1,137 @@
+-- EX. 11
+
+-- a)
+-- Afișarea orașelor în care se joacă piese de teatru pe strazile cu numele "Frunzelor"
+-- si rating-ul spectacolelor.
+-- Rezultatele sunt formatate astfel: <Nume_specatcol> se joacă în <nume_oraș>;
+-- și sunt afișate în ordine descrescătoare după cheia primară a spectacolelor.
+-- Daca specatacolele nu au rating se afiseaza "Fara rating".
+
+select concat(concat(s.nume_spectacol,' se joaca in '),l.oras) "Unde se joaca spectacolele", decode(s.rating, null,'Fara rating', s.rating) "Rating"
+from locatie l join teatru t on l.id_locatie = t.id_locatie 
+                join colaborare c on c.id_teatru = t.id_teatru
+                join spectacol s on s.id_spectacol = c.id_spectacol
+where initcap(l.strada) = 'Frunzelor'
+order by s.id_spectacol desc;
+
+-- b)
+-- Afisarea spectacolelor cu numele genului "comedie", id-ul rezervarii
+-- si cate zile mai sunt pana cand clientul merge la spectacol.
+-- Daca data rezervarii a trecut atunci se va afisa "Expirat"
+
+select to_char(data_rezervare,'dl')"Data rezervare", id_rezervare, case when to_char(round(data_rezervare - sysdate) + 1) < to_char(0) then 'Expirat' 
+                                                        else to_char(round(data_rezervare - sysdate) + 1) end "Numar zile ramase"
+from rezervare
+where id_spectacol in(
+                    select id_spectacol
+                    from spectacol
+                    where id_gen in (
+                                        select id_gen
+                                        from gen
+                                        where nume_gen = 'comedie'
+                                        )
+                    );
+
+-- c)
+-- Afisarea rating-ului mediu al spectacolelor pentru fiecare an mai mare decât anul 2000.
+
+select an_lansare, nvl(avg(rating), 0) "Rating mediu"
+from spectacol
+group by an_lansare
+having an_lansare > 2000;
+
+-- d)
+-- Afisarea genurilor de spectacole si suma totala a preturilor spectacolelor
+-- cu genul respectiv, al caror spectacole au valoarea toatala a pretului
+-- mai mica decat media tuturor preturilor spectacolelor
+
+with total_genuri as (
+                        select nume_gen, sum(pret) Total
+                        from gen g join spectacol s on (g.id_gen = s.id_gen)
+                        group by nume_gen
+                        ),
+fin_medie as (
+                select avg(Total) Medie
+                from total_genuri
+                )
+
+select *
+from total_genuri
+where Total < (
+                select Medie
+                from fin_medie
+                )
+order by nume_gen;
+
+-- e)
+-- Afisarea numelui spectacolului, a pretului, a regizorului si al anului lansarii
+-- spectacolelor al caror pret este mai mare decat media preturilor spectacolelor
+-- ale unui regizor.
+-- Daca anul lansarii este anul curent atunci se va afisa "*NOU*".
+
+select s.nume_spectacol, s.pret, p.regizor, case s.an_lansare when to_char(sysdate,'yyyy') then '*NOU*' else s.an_lansare end "Vechime"
+from spectacol s, producatori p
+where pret > (select avg(ss.pret)
+                from spectacol ss
+                where ss.id_prod = s.id_prod
+) and s.id_prod = p.id_prod;
+
+--=================================================
+--=================================================
+--=================================================
+
+-- EX. 12
+
+-- a)
+-- Actualizarea preturilor spectacolelor care s-au lansat in anii [2000, 2012]
+-- Noul pret va fi mai scump cu 30% decat pretul celui mai scump spectacol.
+
+update spectacol 
+set pret = ( 
+            select max(pret) * 1.3 
+            from spectacol 
+            ) 
+where 2000 <= an_lansare and an_lansare <= 2012;
+
+-- b)
+-- Stergerea spectacolelor unde in echipa de producatori
+-- regizor este "Mihai Bendeac".
+
+delete 
+from spectacol
+where id_prod = any(
+                    select id_prod 
+                    from producatori
+                    where regizor = 'Mihai Bendeac'
+                    );
+
+-- c)
+-- Actualizarea preturilor spectacolelor al caror rating 
+-- este unic.
+
+update spectacol
+set pret = pret / 2
+where rating in (
+                    select rating
+                    from spectacol
+                    group by rating
+                    having count(*) = 1
+                );
+
+--=================================================
+--=================================================
+--=================================================
+
+-- EX. 13
+
+create sequence secventa_client
+increment by 10
+start with 80
+maxvalue 90000
+nocycle;
+
+insert into client
+values (secventa_client.nextval, 'Stanciu', 'Miron', 'stanciu.mi@yahoo.com', null);
+
+insert into client
+values (secventa_client.nextval, 'Stamate', 'Dumitru', 'stamate.d@office.ro', to_date('18-02-1982','DD-MM-YYYY'));

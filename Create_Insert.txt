@@ -1,0 +1,184 @@
+create table CLIENT(
+    id_client number(6) primary key,
+    nume varchar2(30) not null,
+    prenume varchar2(30) not null,
+    email varchar2(25) not null,
+    data_nastere date,
+    unique (email)
+);
+
+insert into CLIENT values(10,'Pop','Alex','popa@gmail.com',null);
+insert into CLIENT values(20,'Ionescu','Ana','ionescu.a@gmail.com',to_date('18-02-1999','DD-MM-YYYY'));
+insert into CLIENT values(30,'Gabor','Mara','gabor.m@gmail.com',to_date('06-12-1987','DD-MM-YYYY'));
+insert into CLIENT values(40,'Suciu','Matei','suciu.m@gmail.com',to_date('18-05-2001','DD-MM-YYYY'));
+insert into CLIENT values(50,'Avram','George','avram.g@gmail.com',null);
+insert into CLIENT values(60,'Pop','Alex','popa.a@gmail.com',null);
+insert into CLIENT values(70,'Mincu','Daria','mincu.d@yahoo.com',to_date('28-09-2000','DD-MM-YYYY'));
+
+select * from client;
+
+create table CARD(
+    id_card number(6) primary key,
+    luna_expirare number(2) not null,
+    an_expirare number(2) not null,
+    brand varchar2(15) not null,
+    id_client number(6) unique,
+    constraint FK_client_card foreign key(id_client) references CLIENT(id_client)
+);
+
+insert into CARD values(1,'09','23','Visa',30);
+insert into CARD values(2,'04','21','Mastercard',50);
+insert into CARD values(3,'07','22','Mastercard',70);
+insert into CARD values(4,'11','21','Citibank',60);
+insert into CARD values(5,'04','23','Visa',40);
+insert into CARD values(6,'01','24','AmericanExpress',20);
+
+select * from card;
+
+create table GEN(
+    id_gen number(6) primary key,
+    nume_gen varchar2(10) not null
+);
+
+insert into GEN values(1,'absurd');
+insert into GEN values(2,'grotesc');
+insert into GEN values(3,'satira');
+insert into GEN values(4,'comedie');
+insert into GEN values(5,'tragic');
+insert into GEN values(6,'drama');
+
+select * from gen;
+
+create table PRODUCATORI(
+    id_prod number(6) primary key,
+    regizor varchar(25) not null,
+    scenarist varchar(25) not null
+);
+
+insert into PRODUCATORI values(1,'Felix Alexa', 'Alex Ifrim');
+insert into PRODUCATORI values(2,'Sica Alexandrescu', 'Vlad Musteriu');
+insert into PRODUCATORI values(3,'Mara Barbu', 'Mara Barbu');
+insert into PRODUCATORI values(4,'Mihai Bendeac', 'Alexandra Matei');
+
+select * from producatori;
+
+create table SPECTACOL(
+    id_spectacol number(6) primary key,
+    nume_spectacol varchar2(35) not null unique,
+    durata number(1) not null,
+    rating number(2,1),
+    an_lansare varchar2(4) not null,
+    pret number(5,1) not null,
+    id_gen number(6),
+    id_prod number(6),
+    constraint FK_gen_spectacol foreign key(id_gen) references GEN(id_gen),
+    constraint FK_producatori_spectacol foreign key(id_prod) references PRODUCATORI(id_prod),
+    constraint CONS_durata check (durata <= 5 and durata >= 1),
+    constraint CONS_rating check (rating <= 5 and rating >= 1)
+);
+
+insert into SPECTACOL values(10,'Divort in ziua nuntii', 2, 3, 2002, 50, 4, 3);
+insert into SPECTACOL values(11,'Ursul', 3, 3.5, 2010, 20, 2, 3);
+insert into SPECTACOL values(12,'Necasatoria', 2, 4, 2010, 15, 5, 2);
+insert into SPECTACOL values(13,'Cursa de soareci', 2, 2, 1999, 33, 6, 3);
+insert into SPECTACOL values(14,'O noapte furtunoasa', 3, 5, 1999, 45, 4, 1);
+insert into SPECTACOL values(15,'Doi pe o banca', 2, null, 2019, 27, 4, 4);
+insert into SPECTACOL values(16,'Colectionarul', 2, null, 2021, 16, 4, 2);
+insert into SPECTACOL values(17,'Meciul de comedie', 2, 4, 2011, 17, 2, 2);
+insert into SPECTACOL values(18,'Avarul', 2, 4, 2021, 28, 04, 04);
+
+select * from spectacol;
+
+create table LOCATIE(
+    id_locatie number(6) primary key,
+    strada varchar2(20) not null,
+    oras varchar2(25) not null,
+    cod_postal number(6)
+);
+
+insert into LOCATIE values(1,'Lalelelor','Bucuresti',null);
+insert into LOCATIE values(2,'Florilor','Bucuresti',null);
+insert into LOCATIE values(3,'Ghioceilor','Bucuresti',null);
+insert into LOCATIE values(4,'Bujorilor','Cluj',null);
+insert into LOCATIE values(5,'Frunzelor','Brasov',null);
+
+select * from locatie;
+
+create table TEATRU(
+    id_teatru number(6) primary key,
+    nume_teatru varchar2(25) not null,
+    director varchar2(20),
+    id_locatie number(6),
+    constraint FK_locatie_teatru foreign key(id_locatie) references LOCATIE(id_locatie)
+);
+
+insert into TEATRU values(10,'Teatrul Judetean Brasov','Zaharia Herdelea',5);
+insert into TEATRU values(20,'Teatrul Judetean Cluj','Vasile Baciu',4);
+insert into TEATRU values(30,'Teatrul de Comedie Brasov','Stefan Gheorghidiu',5);
+insert into TEATRU values(40,'Teatrul Artcub','Otilia Marculescu',3);
+insert into TEATRU values(50,'Teatrul Nottara','Nechifor Lipan',1);
+insert into TEATRU values(60,'Teatrul Guguta','Lica Samadau',2);
+
+select * from teatru;
+
+create table ACTOR(
+    id_actor number(6) primary key,
+    nume_actor varchar(20) not null,
+    prenume_actor varchar(20) not null,
+    nr_premii number(2)
+);
+
+insert into ACTOR values(10,'Morgenstern','Maia',2);
+insert into ACTOR values(20,'Malaele','Horatiu',3);
+insert into ACTOR values(30,'Iures','Marcel',1);
+insert into ACTOR values(40,'Alexandru','Alex', null);
+insert into ACTOR values(50,'Arsinel','Alexandru',2);
+
+select * from actor;
+
+create table REZERVARE(
+    id_rezervare number(6) primary key,
+    id_spectacol number(6) not null,
+    id_client number(6) not null,
+    data_rezervare date not null,
+    constraint FK_client_rezervare foreign key(id_client) references CLIENT(id_client),
+    constraint FK_spectacol_rezervare foreign key(id_spectacol) references SPECTACOL(id_spectacol)
+);
+
+insert into REZERVARE values(101, 10, 10, to_date('04-11-2021','DD-MM-YYYY'));
+insert into REZERVARE values(102, 11, 10, to_date('13-10-2021','DD-MM-YYYY'));
+insert into REZERVARE values(103, 12, 10, to_date('25-03-2021','DD-MM-YYYY'));
+insert into REZERVARE values(104, 10, 70, to_date('04-12-2021','DD-MM-YYYY'));
+insert into REZERVARE values(105, 11, 70, to_date('28-08-2021','DD-MM-YYYY'));
+insert into REZERVARE values(106, 12, 70, to_date('11-01-2021','DD-MM-YYYY'));
+insert into REZERVARE values(107, 13, 70, to_date('14-08-2021','DD-MM-YYYY'));
+insert into REZERVARE values(108, 17, 20, to_date('07-12-2021','DD-MM-YYYY'));
+insert into REZERVARE values(109, 17, 20, to_date('12-08-2021','DD-MM-YYYY'));
+insert into REZERVARE values(110, 10, 40, to_date('23-10-2021','DD-MM-YYYY'));
+insert into REZERVARE values(111, 13, 20, to_date('14-08-2021','DD-MM-YYYY'));
+insert into REZERVARE values(112, 10, 10, to_date('01-06-2021','DD-MM-YYYY'));
+
+select * from rezervare;
+
+create table COLABORARE(
+    id_colaborare number(6) primary key,
+    id_spectacol number(6) not null,
+    id_teatru number(6) not null,
+    id_actor number(6) not null,
+    constraint FK_spectacol_colaborare foreign key(id_spectacol) references SPECTACOL(id_spectacol),
+    constraint FK_actor_colaborare foreign key(id_actor) references ACTOR(id_actor),
+    constraint FK_teatru_colaborare foreign key(id_teatru) references TEATRU(id_teatru)
+);
+
+insert into COLABORARE values(101,10,10,20);
+insert into COLABORARE values(102,10,20,20);
+insert into COLABORARE values(103,10,40,20);
+insert into COLABORARE values(104,11,30,30);
+insert into COLABORARE values(105,12,40,30);
+insert into COLABORARE values(106,12,40,30);
+insert into COLABORARE values(107,12,60,40);
+insert into COLABORARE values(108,12,50,40);
+insert into COLABORARE values(109,16,10,40);
+insert into COLABORARE values(110,17,10,20);
+
+select * from colaborare;
